@@ -1,25 +1,20 @@
 #!/usr/bin/python3
 """
-Rotate 2D Matrix
+Rotate a 2D matrix 90 degrees clockwise.
 """
 
-def rotate_2d_matrix(matrix)
-    """rotate two dimension matrix 90 degrees clockwise
-    Args:
-        matrix (list[[list]]): a matrix
-    """
-    n = len(matrix)
-    for i in range(int(n / 2)):
-        y = (n - i - 1)
-        for j in range(i, y):
-            x = (n -1 - j)
-            # current number
-            tmp = matrix[i][j]
-            # change top for left
-            matrix[i][j] = matrix[x][i]
-            # change left for bottom
-            matrix[x][i] = matrix[y][x]
-            # change bottom for right
-            matrix[y][x] = matrix[j][y]
-            # change right for top
-            matrix[j][y] = tmp
+def rotate_2d_matrix(matrix):
+	"""
+	Rotates an n x n 2D matrix 90 degrees clockwise in-place.
+	Args:
+		matrix (list of list of int): The 2D matrix to rotate.
+	"""
+	n = len(matrix)
+	for i in range(n // 2):
+		for j in range(i, n - i - 1):
+			# Perform 4-way swap
+			temp = matrix[i][j]
+			matrix[i][j] = matrix[n - j - 1][i]
+			matrix[n - j - 1][i] = matrix[n - i - 1][n - j - 1]
+			matrix[n - i - 1][n - j - 1] = matrix[j][n - i - 1]
+			matrix[j][n - i - 1] = temp

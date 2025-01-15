@@ -1,37 +1,38 @@
 #!/usr/bin/node
+// Prints all characters of a Star Wars movie using the ALX Star Wars API
 
-const request = require('request');
-const movieId = process.argv[2];
-
-if (!movieId) {
-  console.error('Usage: ./0-starwars_characters.js <Movie_ID>');
-  process.exit(1);
+if (process.argv.length !== 3) {
+  process.exit();
 }
+const movieID = process.argv[2];
+const url = `https://swapi-api.alx-tools.com/api/films/${movieID}`;
+const request = require('request');
 
-const apiUrl = `https://swapi-api.alx-tools.com/api/films/${movieId}/`;
-
-// Fetch movie details
-request(apiUrl, (error, response, body) => {
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  if (response.statusCode !== 200) {
-    console.error(`Error: Received status code ${response.statusCode}`);
-    return;
-  }
-
-  const film = JSON.parse(body);
-  const characters = film.characters;
-
-  // Fetch each character in order
-  characters.forEach((url) => {
-    request(url, (err, res, body) => {
-      if (!err && res.statusCode === 200) {
-        const character = JSON.parse(body);
-        console.log(character.name);
+// Recursive function to get and print character names from a list of URLs
+function printNextCharacter (urls) {
+  // Remove first URL from list and parse it
+  const characterURL = urls.shift();
+  if (characterURL) {
+    request(characterURL, function (error, response, body) {
+      if (!error) {
+        // Parse and print the character name from the response body
+        console.log(JSON.parse(body).name);
+        // Move to next character in the list
+        printNextCharacter(urls);
       }
     });
+  }
+}
+
+// Fetches a list of character's URLs then uses a callback to print each one's name
+function printStarWarsCharacters (url) {
+  // Get list of URLs for characters in selected film
+  request(url, function (error, response, body) {
+    if (!error) {
+      // Call recursive function to fetch and print character names from URLs list
+      printNextCharacter(JSON.parse(body).characters);
+    }
   });
-});
+}
+
+printStarWarsCharacters(url);

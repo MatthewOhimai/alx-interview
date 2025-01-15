@@ -1,41 +1,37 @@
 #!/usr/bin/node
-/**
- * Wrapper function for request object that allows it
- * to work with async and await
- * @param   {String} url - site url
- * @returns {Promise}    - promise object that resolves
- *                         with parsed JSON response
- *                         and rejects with the request error.
- */
-function makeRequest (url) {
-  const request = require('request');
-  return new Promise((resolve, reject) => {
-    request.get(url, (error, response, body) => {
-      if (error) reject(error);
-      else resolve(JSON.parse(body));
+
+const request = require('request');
+const movieId = process.argv[2];
+
+if (!movieId) {
+  console.error('Usage: ./0-starwars_characters.js <Movie_ID>');
+  process.exit(1);
+}
+
+const apiUrl = `https://swapi-api.alx-tools.com/api/films/${movieId}/`;
+
+// Fetch movie details
+request(apiUrl, (error, response, body) => {
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  if (response.statusCode !== 200) {
+    console.error(`Error: Received status code ${response.statusCode}`);
+    return;
+  }
+
+  const film = JSON.parse(body);
+  const characters = film.characters;
+
+  // Fetch each character in order
+  characters.forEach((url) => {
+    request(url, (err, res, body) => {
+      if (!err && res.statusCode === 200) {
+        const character = JSON.parse(body);
+        console.log(character.name);
+      }
     });
   });
-}
-
-/**
- * Entry point - makes requests to Star Wars API
- * for movie info based movie ID passed as a CLI parameter.
- * Retrieves movie character info then prints their names
- * in order of appearance in the initial response.
- */
-async function main () {
-  const args = process.argv;
-
-  if (args.length < 3) return;
-
-  const movieUrl = 'https://swapi-api.alx-tools.com/api/films/' + args[2];
-  const movie = await makeRequest(movieUrl);
-
-  if (movie.characters === undefined) return;
-  for (const characterUrl of movie.characters) {
-    const character = await makeRequest(characterUrl);
-    console.log(character.name);
-  }
-}
-
-main();
+});
